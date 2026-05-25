@@ -245,36 +245,52 @@ body{font-family:'Nunito Sans',sans-serif;background:var(--bg);color:var(--text)
 
 <div class="toast" id="toast"><i class="ti ti-check"></i><span id="toastMsg"></span></div>
 
-<script>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getDatabase, ref, onValue, set } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+const app = initializeApp({ databaseURL: "https://agenda-aline-6915f-default-rtdb.firebaseio.com" });
+const db = getDatabase(app);
+const dbRef = ref(db, 'agenda');
+
 const TYPES={
   lembrete:{label:'Lembrete',icon:'ti-bell',color:'var(--lembrete)'},
   reuniao:{label:'Reunião Interna',icon:'ti-users',color:'var(--reuniao)'},
   cliente:{label:'Reunião Cliente',icon:'ti-briefcase',color:'var(--cliente)'},
 };
-let events=JSON.parse(localStorage.getItem('agenda_obdc_aline')||'[]');
+
+let events=[];
 let currentView='semana';
 let currentWeekStart=getWeekStart(new Date());
 let filterTypeVal='todos';
 let miniCalDate=new Date();
 let editingId=null;
 let selType='lembrete';
+let initialized=false;
 
-if(!events.length){
-  const today=new Date();
-  const fmt=d=>d.toISOString().split('T')[0];
-  const d0=fmt(today);
-  const d1=fmt(new Date(today.getTime()+86400000));
-  const d2=fmt(new Date(today.getTime()+2*86400000));
-  events=[
-    {id:'e1',type:'lembrete',title:'Enviar relatório mensal',date:d0,start:'09:00',end:'09:30',local:'',obs:'Relatório de abril'},
-    {id:'e2',type:'reuniao',title:'Reunião de planejamento fiscal',date:d0,start:'10:00',end:'11:00',local:'Sala 2',obs:'Pauta: IRPJ e CSLL'},
-    {id:'e3',type:'cliente',title:'Reunião Empresa XYZ',date:d1,start:'14:00',end:'15:00',local:'Online',obs:'Revisão do balanço'},
-    {id:'e4',type:'lembrete',title:'Prazo DARF PIS/COFINS',date:d2,start:'08:00',end:'08:30',local:'',obs:'Verificar pagamento'},
-  ];
-  save();
-}
+const DEMO = [
+  {id:'e1',type:'lembrete',title:'Enviar relatório mensal',date:todayStr(),start:'09:00',end:'09:30',local:'',obs:'Relatório de abril'},
+  {id:'e2',type:'reuniao',title:'Reunião de planejamento fiscal',date:todayStr(),start:'10:00',end:'11:00',local:'Sala 2',obs:'Pauta: IRPJ e CSLL'},
+  {id:'e3',type:'cliente',title:'Reunião Empresa XYZ',date:addDaysStr(1),start:'14:00',end:'15:00',local:'Online',obs:'Revisão do balanço'},
+  {id:'e4',type:'lembrete',title:'Prazo DARF PIS/COFINS',date:addDaysStr(2),start:'08:00',end:'08:30',local:'',obs:'Verificar pagamento'},
+];
 
-function save(){localStorage.setItem('agenda_obdc_aline',JSON.stringify(events));}
+onValue(dbRef, (snapshot) => {
+  const data = snapshot.val();
+  if(!data || !data.events || data.events.length === 0){
+    if(!initialized){ initialized=true; events=DEMO; saveAll(); }
+  } else {
+    initialized=true;
+    events = data.events || [];
+  }
+  render();
+});
+
+function saveAll(){ set(dbRef, { events }); }
+function saveEvents(){ set(ref(db,'agenda/events'), events); }
+
+function todayStr(){ return new Date().toISOString().split('T')[0]; }
+function addDaysStr(n){ return fmtDate(new Date(Date.now()+n*86400000)); }
 function getWeekStart(d){const dt=new Date(d);const day=dt.getDay();const diff=dt.getDate()-day+(day===0?-6:1);dt.setDate(diff);dt.setHours(0,0,0,0);return dt;}
 function addDays(d,n){const dt=new Date(d);dt.setDate(dt.getDate()+n);return dt;}
 function fmtDate(d){return d.toISOString().split('T')[0];}
@@ -287,12 +303,14 @@ function setView(v,btn){
   if(v==='hoje')currentWeekStart=getWeekStart(new Date());
   render();
 }
+window.setView=setView;
 
 function navWeek(dir){
   if(dir===0)currentWeekStart=getWeekStart(new Date());
   else currentWeekStart=addDays(currentWeekStart,dir*7);
   render();
 }
+window.navWeek=navWeek;
 
 function filterType(t,btn){
   filterTypeVal=t;
@@ -300,6 +318,7 @@ function filterType(t,btn){
   document.getElementById('f-'+t).classList.add('active');
   render();
 }
+window.filterType=filterType;
 
 function getFiltered(){return filterTypeVal==='todos'?events:events.filter(e=>e.type===filterTypeVal);}
 
@@ -336,13 +355,13 @@ function renderWeek(){
   for(let i=0;i<7;i++){
     const d=addDays(currentWeekStart,i);const ds=fmtDate(d);
     const dayEvents=getFiltered().filter(e=>e.date===ds);
-    html+=`<div class="day-col" onclick="openModalDate('${ds}')">`;
+    html+=`<div class="day-col" onclick="window.openModalDate('${ds}')">`;
     for(let h=7;h<=20;h++) html+=`<div class="hour-line" style="top:${(h-7)*60}px"></div>`;
     if(ds===today){const now=new Date();const mins=(now.getHours()-7)*60+now.getMinutes();if(mins>=0&&mins<=840)html+=`<div class="now-line" style="top:${mins}px"></div>`;}
     dayEvents.forEach(ev=>{
       const[sh,sm]=ev.start.split(':').map(Number);const[eh,em]=ev.end.split(':').map(Number);
       const top=(sh-7)*60+sm;const height=Math.max((eh-sh)*60+(em-sm),28);
-      html+=`<div class="event-block ${ev.type}" style="top:${top}px;height:${height}px" onclick="event.stopPropagation();viewEvent('${ev.id}')">
+      html+=`<div class="event-block ${ev.type}" style="top:${top}px;height:${height}px" onclick="event.stopPropagation();window.viewEvent('${ev.id}')">
         <div class="ev-title ${ev.type}"><i class="ti ${TYPES[ev.type].icon}" style="font-size:10px;margin-right:3px"></i>${ev.title}</div>
         ${height>35?`<div class="ev-time">${ev.start}–${ev.end}</div>`:''}
       </div>`;
@@ -366,7 +385,7 @@ function renderList(){
   Object.keys(grouped).sort().forEach(date=>{
     html+=`<div class="list-section"><div class="list-date-hdr"><i class="ti ti-calendar" style="font-size:13px"></i>${fmtDateBR(date)}</div>`;
     grouped[date].forEach(ev=>{
-      html+=`<div class="list-event" onclick="viewEvent('${ev.id}')">
+      html+=`<div class="list-event" onclick="window.viewEvent('${ev.id}')">
         <div class="list-type-bar ${ev.type}"></div>
         <div class="list-info">
           <div class="list-title">${ev.title}</div>
@@ -377,9 +396,9 @@ function renderList(){
           </div>
         </div>
         <div class="list-actions" onclick="event.stopPropagation()">
-          <button class="action-btn" onclick="openEdit('${ev.id}')" title="Editar"><i class="ti ti-pencil"></i></button>
-          <button class="action-btn" onclick="openReagendar('${ev.id}')" title="Reagendar"><i class="ti ti-calendar-event"></i></button>
-          <button class="action-btn del" onclick="deleteEvent('${ev.id}')" title="Excluir"><i class="ti ti-trash"></i></button>
+          <button class="action-btn" onclick="window.openEdit('${ev.id}')" title="Editar"><i class="ti ti-pencil"></i></button>
+          <button class="action-btn" onclick="window.openReagendar('${ev.id}')" title="Reagendar"><i class="ti ti-calendar-event"></i></button>
+          <button class="action-btn del" onclick="window.deleteEvent('${ev.id}')" title="Excluir"><i class="ti ti-trash"></i></button>
         </div>
       </div>`;
     });
@@ -396,9 +415,9 @@ function renderMiniCal(){
   const today=fmtDate(new Date());
   const eventDates=new Set(events.map(e=>e.date));
   let html=`<div class="mini-cal-head">
-    <button class="mini-cal-nav" onclick="miniNav(-1)"><i class="ti ti-chevron-left"></i></button>
+    <button class="mini-cal-nav" onclick="window.miniNav(-1)"><i class="ti ti-chevron-left"></i></button>
     <span class="mini-cal-title">${months[month]} ${year}</span>
-    <button class="mini-cal-nav" onclick="miniNav(1)"><i class="ti ti-chevron-right"></i></button>
+    <button class="mini-cal-nav" onclick="window.miniNav(1)"><i class="ti ti-chevron-right"></i></button>
   </div><div class="mini-cal-grid">`;
   ['S','T','Q','Q','S','S','D'].forEach(d=>html+=`<div class="mini-day-hdr">${d}</div>`);
   const startDay=(firstDay===0?6:firstDay-1);
@@ -406,20 +425,21 @@ function renderMiniCal(){
   for(let d=1;d<=daysInMonth;d++){
     const ds=`${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
     const isToday=ds===today;const hasEv=eventDates.has(ds);
-    html+=`<div class="mini-day${isToday?' today':''}${hasEv&&!isToday?' has-event':''}" onclick="jumpToDate('${ds}')">${d}</div>`;
+    html+=`<div class="mini-day${isToday?' today':''}${hasEv&&!isToday?' has-event':''}" onclick="window.jumpToDate('${ds}')">${d}</div>`;
   }
   html+=`</div>`;
   document.getElementById('miniCal').innerHTML=html;
 }
 
-function miniNav(dir){miniCalDate=new Date(miniCalDate.getFullYear(),miniCalDate.getMonth()+dir,1);renderMiniCal();}
+window.miniNav=function(dir){miniCalDate=new Date(miniCalDate.getFullYear(),miniCalDate.getMonth()+dir,1);renderMiniCal();}
+window.jumpToDate=function(ds){currentWeekStart=getWeekStart(new Date(ds+'T00:00:00'));if(currentView==='lista')setView('semana',null);render();}
 
-function openModal(date){editingId=null;selType='lembrete';document.getElementById('modalTitle').textContent='Nova demanda';buildForm(null,date);document.getElementById('modal').classList.add('open');}
-function openModalDate(date){openModal(date);}
-function openEdit(id){const ev=events.find(e=>e.id===id);if(!ev)return;editingId=id;selType=ev.type;document.getElementById('modalTitle').textContent='Editar demanda';buildForm(ev,null);document.getElementById('modal').classList.add('open');}
-function openReagendar(id){const ev=events.find(e=>e.id===id);if(!ev)return;editingId=id;selType=ev.type;document.getElementById('modalTitle').textContent='Reagendar demanda';buildReagendarForm(ev);document.getElementById('modal').classList.add('open');}
+window.openModal=function(date){editingId=null;selType='lembrete';document.getElementById('modalTitle').textContent='Nova demanda';buildForm(null,date);document.getElementById('modal').classList.add('open');}
+window.openModalDate=function(date){window.openModal(date);}
+window.openEdit=function(id){const ev=events.find(e=>e.id===id);if(!ev)return;editingId=id;selType=ev.type;document.getElementById('modalTitle').textContent='Editar demanda';buildForm(ev,null);document.getElementById('modal').classList.add('open');}
+window.openReagendar=function(id){const ev=events.find(e=>e.id===id);if(!ev)return;editingId=id;document.getElementById('modalTitle').textContent='Reagendar demanda';buildReagendarForm(ev);document.getElementById('modal').classList.add('open');}
 
-function viewEvent(id){
+window.viewEvent=function(id){
   const ev=events.find(e=>e.id===id);if(!ev)return;
   const t=TYPES[ev.type];
   document.getElementById('modalTitle').textContent='Detalhes da demanda';
@@ -440,9 +460,9 @@ function viewEvent(id){
       ${ev.obs?`<div style="display:flex;gap:10px;font-size:13px;font-weight:500"><i class="ti ti-notes" style="color:var(--accent);font-size:16px;margin-top:1px"></i><span style="color:var(--text2)">${ev.obs}</span></div>`:''}
     </div>
     <div style="display:flex;gap:8px;flex-wrap:wrap;border-top:1.5px solid var(--border);padding-top:1rem">
-      <button class="btn-action" onclick="closeModal();openEdit('${ev.id}')"><i class="ti ti-pencil"></i> Editar</button>
-      <button class="btn-action" onclick="closeModal();openReagendar('${ev.id}')"><i class="ti ti-calendar-event"></i> Reagendar</button>
-      <button class="btn-action danger" onclick="deleteEvent('${ev.id}');closeModal()"><i class="ti ti-trash"></i> Excluir</button>
+      <button class="btn-action" onclick="closeModal();window.openEdit('${ev.id}')"><i class="ti ti-pencil"></i> Editar</button>
+      <button class="btn-action" onclick="closeModal();window.openReagendar('${ev.id}')"><i class="ti ti-calendar-event"></i> Reagendar</button>
+      <button class="btn-action danger" onclick="window.deleteEvent('${ev.id}');closeModal()"><i class="ti ti-trash"></i> Excluir</button>
     </div>
   `;
   document.getElementById('modal').classList.add('open');
@@ -452,7 +472,7 @@ function buildForm(ev,date){
   const types=['lembrete','reuniao','cliente'];
   document.getElementById('modalBody').innerHTML=`
     <div class="type-selector">
-      ${types.map(t=>`<div class="type-opt${selType===t?' sel-'+t:''}" id="topt-${t}" onclick="selectType('${t}')">
+      ${types.map(t=>`<div class="type-opt${selType===t?' sel-'+t:''}" id="topt-${t}" onclick="window.selectType('${t}')">
         <i class="ti ${TYPES[t].icon} type-opt-icon" style="color:${TYPES[t].color}"></i>
         <div class="type-opt-label" style="color:${TYPES[t].color}">${TYPES[t].label}</div>
       </div>`).join('')}
@@ -487,7 +507,7 @@ function buildForm(ev,date){
     </div>
     <div class="modal-footer">
       <button class="btn-cancel" onclick="closeModal()">Cancelar</button>
-      <button class="btn-save" onclick="saveEvent()"><i class="ti ti-check"></i> ${editingId?'Salvar alterações':'Criar demanda'}</button>
+      <button class="btn-save" onclick="window.saveEvent()"><i class="ti ti-check"></i> ${editingId?'Salvar alterações':'Criar demanda'}</button>
     </div>
   `;
 }
@@ -519,14 +539,14 @@ function buildReagendarForm(ev){
     </div>
     <div class="modal-footer">
       <button class="btn-cancel" onclick="closeModal()">Cancelar</button>
-      <button class="btn-save" onclick="saveReagendar('${ev.id}')"><i class="ti ti-calendar-event"></i> Reagendar</button>
+      <button class="btn-save" onclick="window.saveReagendar('${ev.id}')"><i class="ti ti-calendar-event"></i> Reagendar</button>
     </div>
   `;
 }
 
-function selectType(t){selType=t;document.querySelectorAll('.type-opt').forEach(el=>{el.className='type-opt';});document.getElementById('topt-'+t).className='type-opt sel-'+t;}
+window.selectType=function(t){selType=t;document.querySelectorAll('.type-opt').forEach(el=>{el.className='type-opt';});document.getElementById('topt-'+t).className='type-opt sel-'+t;}
 
-function saveEvent(){
+window.saveEvent=function(){
   const title=document.getElementById('fTitle').value.trim();
   const date=document.getElementById('fDate').value;
   const start=document.getElementById('fStart').value;
@@ -536,29 +556,30 @@ function saveEvent(){
   if(!title||!date||!start||!end){showToast('Preencha os campos obrigatórios');return;}
   if(editingId){const idx=events.findIndex(e=>e.id===editingId);if(idx>-1)events[idx]={...events[idx],type:selType,title,date,start,end,local,obs};showToast('Demanda atualizada!');}
   else{events.push({id:'e'+Date.now(),type:selType,title,date,start,end,local,obs});showToast('Demanda criada!');}
-  save();closeModal();render();
+  saveEvents();closeModal();
 }
 
-function saveReagendar(id){
+window.saveReagendar=function(id){
   const date=document.getElementById('rDate').value;
   const start=document.getElementById('rStart').value;
   const end=document.getElementById('rEnd').value;
   if(!date||!start||!end){showToast('Preencha todos os campos');return;}
   const idx=events.findIndex(e=>e.id===id);
   if(idx>-1)events[idx]={...events[idx],date,start,end};
-  save();closeModal();render();showToast('Reagendado com sucesso!');
+  saveEvents();closeModal();showToast('Reagendado com sucesso!');
 }
 
-function deleteEvent(id){if(!confirm('Excluir esta demanda?'))return;events=events.filter(e=>e.id!==id);save();render();showToast('Demanda excluída.');}
-
-function jumpToDate(ds){currentWeekStart=getWeekStart(new Date(ds+'T00:00:00'));if(currentView==='lista')setView('semana',null);render();}
+window.deleteEvent=function(id){
+  if(!confirm('Excluir esta demanda?'))return;
+  events=events.filter(e=>e.id!==id);
+  saveEvents();showToast('Demanda excluída.');
+}
 
 function closeModal(){document.getElementById('modal').classList.remove('open');}
+window.closeModal=closeModal;
 document.getElementById('modal').addEventListener('click',function(e){if(e.target===this)closeModal();});
 
 function showToast(msg){document.getElementById('toastMsg').textContent=msg;const t=document.getElementById('toast');t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500);}
-
-render();
 </script>
 </body>
 </html>
