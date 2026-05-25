@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Agenda — Aline | OBDC</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800&family=Nunito+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+<style>
+:root{
+  --bg:#F4F7F5;
+  --surface:#FFFFFF;
+  --surface2:#EEF3F0;
+  --border:#D8E4DC;
+  --border2:#C2D5C8;
+  --text:#1C3329;
+  --text2:#4A6B58;
+  --text3:#8AADA0;
+  --accent:#00A859;
+  --accent2:#00C46A;
+  --accent-light:#E6F7EE;
+  --teal:#008B6E;
+  --lembrete-bg:#FFF8EC;--lembrete:#D97B00;--lembrete-border:#F5C97A;
+  --reuniao-bg:#EAF5FF;--reuniao:#0077C8;--reuniao-border:#9FD0F0;
+  --cliente-bg:#F0FAF4;--cliente:#00A859;--cliente-border:#80D4A8;
+  --radius:14px;--radius-sm:9px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Nunito Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:14px}
+::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
+
+.layout{display:grid;grid-template-columns:270px 1fr;min-height:100vh}
+
+/* SIDEBAR */
+.sidebar{background:var(--surface);border-right:1.5px solid var(--border);padding:1.75rem 1.25rem;display:flex;flex-direction:column;gap:1.5rem}
+.brand{display:flex;align-items:center;gap:10px;padding-bottom:1.25rem;border-bottom:1.5px solid var(--border)}
+.brand-logo{width:44px;height:44px;background:var(--accent);border-radius:10px;display:flex;align-items:center;justify-content:center;font-family:'Nunito',sans-serif;font-size:16px;font-weight:800;color:#fff;letter-spacing:-1px}
+.brand-text{}
+.brand-name{font-family:'Nunito',sans-serif;font-size:16px;font-weight:800;color:var(--accent);letter-spacing:-.3px}
+.brand-slogan{font-size:10px;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:.5px}
+.profile{display:flex;align-items:center;gap:10px;background:var(--accent-light);border-radius:var(--radius-sm);padding:12px}
+.avatar{width:40px;height:40px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-family:'Nunito',sans-serif;font-size:16px;color:#fff;font-weight:800;flex-shrink:0}
+.profile-name{font-family:'Nunito',sans-serif;font-size:14px;font-weight:700;color:var(--text)}
+.profile-role{font-size:11px;color:var(--text2);font-weight:500}
+.nav-label{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.8px;font-weight:700;margin-bottom:6px;padding-left:4px}
+.nav-item{display:flex;align-items:center;gap:9px;padding:9px 12px;border-radius:var(--radius-sm);cursor:pointer;color:var(--text2);font-size:13px;font-weight:600;transition:all .15s;margin-bottom:2px;border:none;background:transparent;width:100%;text-align:left;font-family:'Nunito Sans',sans-serif}
+.nav-item:hover{background:var(--surface2);color:var(--text)}
+.nav-item.active{background:var(--accent-light);color:var(--accent)}
+.nav-item i{font-size:16px;width:20px;text-align:center}
+.add-btn{display:flex;align-items:center;justify-content:center;gap:8px;padding:12px;border-radius:var(--radius-sm);background:var(--accent);color:#fff;font-size:13px;font-weight:700;cursor:pointer;border:none;font-family:'Nunito',sans-serif;transition:all .15s;width:100%;margin-top:auto;letter-spacing:.2px}
+.add-btn:hover{background:var(--accent2)}
+.mini-cal{background:var(--surface2);border-radius:var(--radius-sm);padding:14px;border:1.5px solid var(--border)}
+.mini-cal-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.mini-cal-title{font-family:'Nunito',sans-serif;font-size:13px;font-weight:700;color:var(--text)}
+.mini-cal-nav{background:none;border:none;color:var(--text2);cursor:pointer;padding:3px 7px;border-radius:5px;font-size:14px;transition:all .15s}
+.mini-cal-nav:hover{background:var(--surface);color:var(--accent)}
+.mini-cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px}
+.mini-day-hdr{font-size:9px;color:var(--text3);text-align:center;padding:3px 0;font-weight:700;text-transform:uppercase}
+.mini-day{font-size:11px;color:var(--text2);text-align:center;padding:5px 2px;border-radius:5px;cursor:pointer;transition:all .15s;line-height:1;font-weight:500}
+.mini-day:hover{background:var(--surface);color:var(--text)}
+.mini-day.today{background:var(--accent);color:#fff;font-weight:700}
+.mini-day.other-month{color:var(--border2)}
+.mini-day.has-event::after{content:'';display:block;width:3px;height:3px;border-radius:50%;background:var(--accent);margin:1px auto 0}
+
+/* MAIN */
+.main{display:flex;flex-direction:column}
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:1.25rem 2rem;border-bottom:1.5px solid var(--border);background:var(--surface);gap:12px;flex-wrap:wrap}
+.topbar-title{font-family:'Nunito',sans-serif;font-size:22px;font-weight:800;color:var(--text);letter-spacing:-.3px}
+.topbar-date{font-size:12px;color:var(--text2);margin-top:1px;font-weight:500}
+.topbar-right{display:flex;gap:8px;align-items:center}
+.view-toggle{display:flex;background:var(--surface2);border:1.5px solid var(--border);border-radius:var(--radius-sm);overflow:hidden}
+.view-btn{padding:7px 14px;font-size:12px;font-weight:700;cursor:pointer;border:none;background:transparent;color:var(--text2);font-family:'Nunito',sans-serif;transition:all .15s}
+.view-btn.active{background:var(--accent);color:#fff}
+.icon-btn{width:34px;height:34px;border-radius:var(--radius-sm);border:1.5px solid var(--border);background:var(--surface);cursor:pointer;color:var(--text2);display:flex;align-items:center;justify-content:center;font-size:16px;transition:all .15s}
+.icon-btn:hover{border-color:var(--accent);color:var(--accent)}
+.content{flex:1;padding:1.5rem 2rem;overflow-y:auto}
+
+/* LEGEND */
+.legend{display:flex;gap:16px;margin-bottom:1.25rem;flex-wrap:wrap}
+.leg-item{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text2);font-weight:500}
+.leg-dot{width:8px;height:8px;border-radius:50%}
+
+/* WEEK VIEW */
+.week-header{display:grid;grid-template-columns:52px repeat(7,1fr);background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius) var(--radius) 0 0;border-bottom:1.5px solid var(--border)}
+.week-day-hdr{padding:10px 6px;text-align:center;border-left:1px solid var(--border)}
+.wdh-name{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;font-weight:700}
+.wdh-num{font-size:20px;font-family:'Nunito',sans-serif;font-weight:800;color:var(--text2);line-height:1.3}
+.wdh-num.today{color:var(--accent)}
+.week-body{display:grid;grid-template-columns:52px repeat(7,1fr);background:var(--surface);border:1.5px solid var(--border);border-top:none;border-radius:0 0 var(--radius) var(--radius)}
+.time-col{display:flex;flex-direction:column}
+.time-slot{height:60px;display:flex;align-items:flex-start;justify-content:flex-end;padding-right:8px;padding-top:2px}
+.time-label{font-size:10px;color:var(--text3);font-weight:600}
+.day-col{border-left:1px solid var(--border);position:relative;min-height:840px;cursor:pointer}
+.day-col:hover{background:rgba(0,168,89,.03)}
+.hour-line{position:absolute;left:0;right:0;border-top:1px solid var(--border);pointer-events:none}
+.event-block{position:absolute;left:3px;right:3px;border-radius:7px;padding:5px 7px;cursor:pointer;overflow:hidden;transition:all .15s;z-index:2}
+.event-block:hover{filter:brightness(.96);transform:scale(1.01);z-index:10}
+.event-block.lembrete{background:var(--lembrete-bg);border-left:3px solid var(--lembrete);border:1.5px solid var(--lembrete-border);border-left:3px solid var(--lembrete)}
+.event-block.reuniao{background:var(--reuniao-bg);border-left:3px solid var(--reuniao);border:1.5px solid var(--reuniao-border);border-left:3px solid var(--reuniao)}
+.event-block.cliente{background:var(--cliente-bg);border-left:3px solid var(--cliente);border:1.5px solid var(--cliente-border);border-left:3px solid var(--cliente)}
+.ev-title{font-size:11px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ev-title.lembrete{color:var(--lembrete)}
+.ev-title.reuniao{color:var(--reuniao)}
+.ev-title.cliente{color:var(--cliente)}
+.ev-time{font-size:10px;color:var(--text2);margin-top:1px;font-weight:500}
+.now-line{position:absolute;left:0;right:0;border-top:2px solid var(--accent);z-index:5;pointer-events:none}
+.now-line::before{content:'';width:8px;height:8px;background:var(--accent);border-radius:50%;position:absolute;left:-4px;top:-4px}
+
+/* LIST VIEW */
+.list-section{margin-bottom:1.5rem}
+.list-date-hdr{font-family:'Nunito',sans-serif;font-size:14px;font-weight:800;color:var(--accent);margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.list-date-hdr::after{content:'';flex:1;height:1.5px;background:var(--border)}
+.list-event{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:12px 14px;margin-bottom:8px;display:flex;align-items:center;gap:12px;cursor:pointer;transition:all .15s}
+.list-event:hover{border-color:var(--accent);background:var(--accent-light)}
+.list-type-bar{width:4px;height:44px;border-radius:2px;flex-shrink:0}
+.list-type-bar.lembrete{background:var(--lembrete)}
+.list-type-bar.reuniao{background:var(--reuniao)}
+.list-type-bar.cliente{background:var(--cliente)}
+.list-info{flex:1;min-width:0}
+.list-title{font-size:13px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.list-meta{font-size:11px;color:var(--text2);margin-top:3px;display:flex;gap:10px;flex-wrap:wrap;font-weight:500}
+.list-badge{font-size:10px;padding:2px 8px;border-radius:20px;font-weight:700}
+.list-badge.lembrete{background:var(--lembrete-bg);color:var(--lembrete);border:1px solid var(--lembrete-border)}
+.list-badge.reuniao{background:var(--reuniao-bg);color:var(--reuniao);border:1px solid var(--reuniao-border)}
+.list-badge.cliente{background:var(--cliente-bg);color:var(--cliente);border:1px solid var(--cliente-border)}
+.list-actions{display:flex;gap:5px}
+.action-btn{width:30px;height:30px;border-radius:7px;border:1.5px solid var(--border);background:var(--surface);cursor:pointer;color:var(--text2);display:flex;align-items:center;justify-content:center;font-size:13px;transition:all .15s}
+.action-btn:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-light)}
+.action-btn.del:hover{border-color:var(--lembrete);color:var(--lembrete);background:var(--lembrete-bg)}
+
+/* MODAL */
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(28,51,41,.35);z-index:100;align-items:center;justify-content:center;backdrop-filter:blur(3px)}
+.modal-bg.open{display:flex}
+.modal{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius);padding:1.75rem;width:min(520px,94vw);max-height:92vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.12)}
+.modal-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem}
+.modal-title{font-family:'Nunito',sans-serif;font-size:20px;font-weight:800;color:var(--text)}
+.close-btn{width:32px;height:32px;border-radius:7px;border:1.5px solid var(--border);background:transparent;cursor:pointer;color:var(--text2);display:flex;align-items:center;justify-content:center;font-size:16px;transition:all .15s}
+.close-btn:hover{border-color:var(--accent);color:var(--accent)}
+.type-selector{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:1.25rem}
+.type-opt{padding:12px 8px;border-radius:var(--radius-sm);border:1.5px solid var(--border);cursor:pointer;text-align:center;transition:all .15s;background:var(--surface2)}
+.type-opt:hover{border-color:var(--border2)}
+.type-opt.sel-lembrete{background:var(--lembrete-bg);border-color:var(--lembrete-border)}
+.type-opt.sel-reuniao{background:var(--reuniao-bg);border-color:var(--reuniao-border)}
+.type-opt.sel-cliente{background:var(--cliente-bg);border-color:var(--cliente-border)}
+.type-opt-icon{font-size:22px;display:block;margin-bottom:5px}
+.type-opt-label{font-size:11px;font-weight:700;color:var(--text2)}
+.form-group{margin-bottom:13px}
+.form-label{font-size:11px;font-weight:700;color:var(--text2);margin-bottom:5px;display:block;text-transform:uppercase;letter-spacing:.5px}
+.form-input{width:100%;font-size:13px;padding:10px 12px;border-radius:var(--radius-sm);border:1.5px solid var(--border);background:var(--bg);color:var(--text);font-family:'Nunito Sans',sans-serif;outline:none;transition:border-color .15s;font-weight:500}
+.form-input:focus{border-color:var(--accent);background:var(--surface)}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.form-textarea{resize:vertical;min-height:75px}
+.modal-footer{display:flex;justify-content:flex-end;gap:8px;margin-top:1.5rem;padding-top:1rem;border-top:1.5px solid var(--border)}
+.btn-cancel{padding:9px 18px;border-radius:var(--radius-sm);border:1.5px solid var(--border);background:transparent;color:var(--text2);font-size:13px;font-weight:600;cursor:pointer;font-family:'Nunito',sans-serif;transition:all .15s}
+.btn-cancel:hover{border-color:var(--border2);color:var(--text)}
+.btn-save{padding:9px 20px;border-radius:var(--radius-sm);border:none;background:var(--accent);color:#fff;font-size:13px;font-weight:700;cursor:pointer;font-family:'Nunito',sans-serif;transition:all .15s;display:inline-flex;align-items:center;gap:6px}
+.btn-save:hover{background:var(--accent2)}
+.btn-action{padding:9px 14px;border-radius:var(--radius-sm);border:1.5px solid var(--border);background:transparent;color:var(--text2);font-size:12px;font-weight:600;cursor:pointer;font-family:'Nunito',sans-serif;transition:all .15s;display:inline-flex;align-items:center;gap:5px}
+.btn-action:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-light)}
+.btn-action.danger:hover{border-color:var(--lembrete);color:var(--lembrete);background:var(--lembrete-bg)}
+.toast{position:fixed;bottom:24px;right:24px;background:var(--accent);color:#fff;padding:12px 18px;border-radius:var(--radius-sm);font-size:13px;font-weight:600;opacity:0;transition:opacity .3s;pointer-events:none;z-index:999;display:flex;align-items:center;gap:8px;font-family:'Nunito',sans-serif;box-shadow:0 6px 20px rgba(0,168,89,.3)}
+.toast.show{opacity:1}
+.empty-state{text-align:center;padding:3rem;color:var(--text3)}
+.empty-state i{font-size:44px;display:block;margin-bottom:12px;color:var(--border2)}
+.empty-state p{font-family:'Nunito',sans-serif;font-weight:700;font-size:15px;color:var(--text2);margin-bottom:8px}
+.empty-state span{font-size:13px}
+@media(max-width:768px){.layout{grid-template-columns:1fr}.sidebar{display:none}.topbar{padding:1rem}.content{padding:1rem}}
+</style>
+</head>
+<body>
+<div class="layout">
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="brand">
+    <div class="brand-logo" style="width:48px;height:48px;background:#00A859;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0"><span style="font-family:Nunito,sans-serif;font-size:13px;font-weight:800;color:#fff;letter-spacing:-.5px">OBDC</span></div>
+    <div class="brand-text">
+      <div class="brand-name">OBDC</div>
+      <div class="brand-slogan">Você Satisfeito</div>
+    </div>
+  </div>
+
+  <div class="profile">
+    <div class="avatar">A</div>
+    <div>
+      <div class="profile-name">Aline</div>
+      <div class="profile-role">Gestora Contábil</div>
+    </div>
+  </div>
+
+  <div>
+    <div class="nav-label">Visualização</div>
+    <button class="nav-item active" onclick="setView('semana',this)"><i class="ti ti-calendar-week"></i> Semana</button>
+    <button class="nav-item" onclick="setView('lista',this)"><i class="ti ti-list"></i> Lista</button>
+    <button class="nav-item" onclick="setView('hoje',this)"><i class="ti ti-calendar-today"></i> Hoje</button>
+  </div>
+
+  <div>
+    <div class="nav-label">Filtrar por tipo</div>
+    <button class="nav-item active" onclick="filterType('todos',this)" id="f-todos"><i class="ti ti-layout-list"></i> Todos</button>
+    <button class="nav-item" onclick="filterType('lembrete',this)" id="f-lembrete"><i class="ti ti-bell" style="color:var(--lembrete)"></i> Lembrete</button>
+    <button class="nav-item" onclick="filterType('reuniao',this)" id="f-reuniao"><i class="ti ti-users" style="color:var(--reuniao)"></i> Reunião interna</button>
+    <button class="nav-item" onclick="filterType('cliente',this)" id="f-cliente"><i class="ti ti-briefcase" style="color:var(--cliente)"></i> Reunião cliente</button>
+  </div>
+
+  <div class="mini-cal" id="miniCal"></div>
+
+  <button class="add-btn" onclick="openModal()"><i class="ti ti-plus"></i> Nova demanda</button>
+</aside>
+
+<!-- MAIN -->
+<main class="main">
+  <div class="topbar">
+    <div>
+      <div class="topbar-title" id="topTitle">Agenda</div>
+      <div class="topbar-date" id="topDate"></div>
+    </div>
+    <div class="topbar-right">
+      <button class="icon-btn" onclick="navWeek(-1)"><i class="ti ti-chevron-left"></i></button>
+      <button class="icon-btn" onclick="navWeek(0)"><i class="ti ti-home"></i></button>
+      <button class="icon-btn" onclick="navWeek(1)"><i class="ti ti-chevron-right"></i></button>
+      <div class="view-toggle">
+        <button class="view-btn active" id="vb-semana" onclick="setView('semana',null)">Semana</button>
+        <button class="view-btn" id="vb-lista" onclick="setView('lista',null)">Lista</button>
+        <button class="view-btn" id="vb-hoje" onclick="setView('hoje',null)">Hoje</button>
+      </div>
+      <button class="icon-btn" onclick="openModal()"><i class="ti ti-plus"></i></button>
+    </div>
+  </div>
+  <div class="content" id="content"></div>
+</main>
+
+</div>
+
+<!-- MODAL -->
+<div class="modal-bg" id="modal">
+  <div class="modal">
+    <div class="modal-head">
+      <span class="modal-title" id="modalTitle">Nova demanda</span>
+      <button class="close-btn" onclick="closeModal()"><i class="ti ti-x"></i></button>
+    </div>
+    <div id="modalBody"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"><i class="ti ti-check"></i><span id="toastMsg"></span></div>
+
+<script>
+const TYPES={
+  lembrete:{label:'Lembrete',icon:'ti-bell',color:'var(--lembrete)'},
+  reuniao:{label:'Reunião Interna',icon:'ti-users',color:'var(--reuniao)'},
+  cliente:{label:'Reunião Cliente',icon:'ti-briefcase',color:'var(--cliente)'},
+};
+let events=JSON.parse(localStorage.getItem('agenda_obdc_aline')||'[]');
+let currentView='semana';
+let currentWeekStart=getWeekStart(new Date());
+let filterTypeVal='todos';
+let miniCalDate=new Date();
+let editingId=null;
+let selType='lembrete';
+
+if(!events.length){
+  const today=new Date();
+  const fmt=d=>d.toISOString().split('T')[0];
+  const d0=fmt(today);
+  const d1=fmt(new Date(today.getTime()+86400000));
+  const d2=fmt(new Date(today.getTime()+2*86400000));
+  events=[
+    {id:'e1',type:'lembrete',title:'Enviar relatório mensal',date:d0,start:'09:00',end:'09:30',local:'',obs:'Relatório de abril'},
+    {id:'e2',type:'reuniao',title:'Reunião de planejamento fiscal',date:d0,start:'10:00',end:'11:00',local:'Sala 2',obs:'Pauta: IRPJ e CSLL'},
+    {id:'e3',type:'cliente',title:'Reunião Empresa XYZ',date:d1,start:'14:00',end:'15:00',local:'Online',obs:'Revisão do balanço'},
+    {id:'e4',type:'lembrete',title:'Prazo DARF PIS/COFINS',date:d2,start:'08:00',end:'08:30',local:'',obs:'Verificar pagamento'},
+  ];
+  save();
+}
+
+function save(){localStorage.setItem('agenda_obdc_aline',JSON.stringify(events));}
+function getWeekStart(d){const dt=new Date(d);const day=dt.getDay();const diff=dt.getDate()-day+(day===0?-6:1);dt.setDate(diff);dt.setHours(0,0,0,0);return dt;}
+function addDays(d,n){const dt=new Date(d);dt.setDate(dt.getDate()+n);return dt;}
+function fmtDate(d){return d.toISOString().split('T')[0];}
+function fmtDateBR(d){return new Date(d+'T00:00:00').toLocaleDateString('pt-BR',{day:'2-digit',month:'long',year:'numeric'});}
+
+function setView(v,btn){
+  currentView=v;
+  document.querySelectorAll('.view-btn').forEach(el=>el.classList.remove('active'));
+  const vb=document.getElementById('vb-'+v);if(vb)vb.classList.add('active');
+  if(v==='hoje')currentWeekStart=getWeekStart(new Date());
+  render();
+}
+
+function navWeek(dir){
+  if(dir===0)currentWeekStart=getWeekStart(new Date());
+  else currentWeekStart=addDays(currentWeekStart,dir*7);
+  render();
+}
+
+function filterType(t,btn){
+  filterTypeVal=t;
+  document.querySelectorAll('[id^="f-"]').forEach(el=>el.classList.remove('active'));
+  document.getElementById('f-'+t).classList.add('active');
+  render();
+}
+
+function getFiltered(){return filterTypeVal==='todos'?events:events.filter(e=>e.type===filterTypeVal);}
+
+function render(){updateTopbar();renderMiniCal();if(currentView==='semana'||currentView==='hoje')renderWeek();else renderList();}
+
+function updateTopbar(){
+  const months=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+  if(currentView!=='lista'){
+    const end=addDays(currentWeekStart,6);
+    document.getElementById('topTitle').textContent=months[currentWeekStart.getMonth()]+' '+currentWeekStart.getFullYear();
+    document.getElementById('topDate').textContent=currentWeekStart.toLocaleDateString('pt-BR',{day:'2-digit',month:'short'})+' — '+end.toLocaleDateString('pt-BR',{day:'2-digit',month:'short',year:'numeric'});
+  } else {
+    document.getElementById('topTitle').textContent='Lista de demandas';
+    document.getElementById('topDate').textContent=new Date().toLocaleDateString('pt-BR',{weekday:'long',day:'2-digit',month:'long',year:'numeric'});
+  }
+}
+
+function renderWeek(){
+  const days=['Seg','Ter','Qua','Qui','Sex','Sáb','Dom'];
+  const today=fmtDate(new Date());
+  let html=`<div class="legend">
+    <div class="leg-item"><div class="leg-dot" style="background:var(--lembrete)"></div>Lembrete</div>
+    <div class="leg-item"><div class="leg-dot" style="background:var(--reuniao)"></div>Reunião Interna</div>
+    <div class="leg-item"><div class="leg-dot" style="background:var(--cliente)"></div>Reunião Cliente</div>
+  </div>`;
+  html+=`<div class="week-header"><div style="border-right:1px solid var(--border)"></div>`;
+  for(let i=0;i<7;i++){
+    const d=addDays(currentWeekStart,i);const ds=fmtDate(d);const isToday=ds===today;
+    html+=`<div class="week-day-hdr"><div class="wdh-name">${days[i]}</div><div class="wdh-num${isToday?' today':''}">${d.getDate()}</div></div>`;
+  }
+  html+=`</div><div class="week-body"><div class="time-col" style="border-right:1px solid var(--border)">`;
+  for(let h=7;h<=20;h++) html+=`<div class="time-slot"><span class="time-label">${String(h).padStart(2,'0')}h</span></div>`;
+  html+=`</div>`;
+  for(let i=0;i<7;i++){
+    const d=addDays(currentWeekStart,i);const ds=fmtDate(d);
+    const dayEvents=getFiltered().filter(e=>e.date===ds);
+    html+=`<div class="day-col" onclick="openModalDate('${ds}')">`;
+    for(let h=7;h<=20;h++) html+=`<div class="hour-line" style="top:${(h-7)*60}px"></div>`;
+    if(ds===today){const now=new Date();const mins=(now.getHours()-7)*60+now.getMinutes();if(mins>=0&&mins<=840)html+=`<div class="now-line" style="top:${mins}px"></div>`;}
+    dayEvents.forEach(ev=>{
+      const[sh,sm]=ev.start.split(':').map(Number);const[eh,em]=ev.end.split(':').map(Number);
+      const top=(sh-7)*60+sm;const height=Math.max((eh-sh)*60+(em-sm),28);
+      html+=`<div class="event-block ${ev.type}" style="top:${top}px;height:${height}px" onclick="event.stopPropagation();viewEvent('${ev.id}')">
+        <div class="ev-title ${ev.type}"><i class="ti ${TYPES[ev.type].icon}" style="font-size:10px;margin-right:3px"></i>${ev.title}</div>
+        ${height>35?`<div class="ev-time">${ev.start}–${ev.end}</div>`:''}
+      </div>`;
+    });
+    html+=`</div>`;
+  }
+  html+=`</div>`;
+  document.getElementById('content').innerHTML=html;
+}
+
+function renderList(){
+  const filtered=getFiltered();
+  if(!filtered.length){
+    document.getElementById('content').innerHTML=`<div class="empty-state"><i class="ti ti-calendar-off"></i><p>Nenhuma demanda encontrada</p><span>Clique em "Nova demanda" para começar</span></div>`;
+    return;
+  }
+  const grouped={};
+  filtered.sort((a,b)=>a.date.localeCompare(b.date)||a.start.localeCompare(b.start));
+  filtered.forEach(ev=>{if(!grouped[ev.date])grouped[ev.date]=[];grouped[ev.date].push(ev);});
+  let html='';
+  Object.keys(grouped).sort().forEach(date=>{
+    html+=`<div class="list-section"><div class="list-date-hdr"><i class="ti ti-calendar" style="font-size:13px"></i>${fmtDateBR(date)}</div>`;
+    grouped[date].forEach(ev=>{
+      html+=`<div class="list-event" onclick="viewEvent('${ev.id}')">
+        <div class="list-type-bar ${ev.type}"></div>
+        <div class="list-info">
+          <div class="list-title">${ev.title}</div>
+          <div class="list-meta">
+            <span><i class="ti ti-clock" style="font-size:11px"></i> ${ev.start}–${ev.end}</span>
+            ${ev.local?`<span><i class="ti ti-map-pin" style="font-size:11px"></i> ${ev.local}</span>`:''}
+            <span class="list-badge ${ev.type}">${TYPES[ev.type].label}</span>
+          </div>
+        </div>
+        <div class="list-actions" onclick="event.stopPropagation()">
+          <button class="action-btn" onclick="openEdit('${ev.id}')" title="Editar"><i class="ti ti-pencil"></i></button>
+          <button class="action-btn" onclick="openReagendar('${ev.id}')" title="Reagendar"><i class="ti ti-calendar-event"></i></button>
+          <button class="action-btn del" onclick="deleteEvent('${ev.id}')" title="Excluir"><i class="ti ti-trash"></i></button>
+        </div>
+      </div>`;
+    });
+    html+=`</div>`;
+  });
+  document.getElementById('content').innerHTML=html;
+}
+
+function renderMiniCal(){
+  const year=miniCalDate.getFullYear(),month=miniCalDate.getMonth();
+  const months=['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+  const firstDay=new Date(year,month,1).getDay();
+  const daysInMonth=new Date(year,month+1,0).getDate();
+  const today=fmtDate(new Date());
+  const eventDates=new Set(events.map(e=>e.date));
+  let html=`<div class="mini-cal-head">
+    <button class="mini-cal-nav" onclick="miniNav(-1)"><i class="ti ti-chevron-left"></i></button>
+    <span class="mini-cal-title">${months[month]} ${year}</span>
+    <button class="mini-cal-nav" onclick="miniNav(1)"><i class="ti ti-chevron-right"></i></button>
+  </div><div class="mini-cal-grid">`;
+  ['S','T','Q','Q','S','S','D'].forEach(d=>html+=`<div class="mini-day-hdr">${d}</div>`);
+  const startDay=(firstDay===0?6:firstDay-1);
+  for(let i=0;i<startDay;i++) html+=`<div class="mini-day other-month"></div>`;
+  for(let d=1;d<=daysInMonth;d++){
+    const ds=`${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const isToday=ds===today;const hasEv=eventDates.has(ds);
+    html+=`<div class="mini-day${isToday?' today':''}${hasEv&&!isToday?' has-event':''}" onclick="jumpToDate('${ds}')">${d}</div>`;
+  }
+  html+=`</div>`;
+  document.getElementById('miniCal').innerHTML=html;
+}
+
+function miniNav(dir){miniCalDate=new Date(miniCalDate.getFullYear(),miniCalDate.getMonth()+dir,1);renderMiniCal();}
+
+function openModal(date){editingId=null;selType='lembrete';document.getElementById('modalTitle').textContent='Nova demanda';buildForm(null,date);document.getElementById('modal').classList.add('open');}
+function openModalDate(date){openModal(date);}
+function openEdit(id){const ev=events.find(e=>e.id===id);if(!ev)return;editingId=id;selType=ev.type;document.getElementById('modalTitle').textContent='Editar demanda';buildForm(ev,null);document.getElementById('modal').classList.add('open');}
+function openReagendar(id){const ev=events.find(e=>e.id===id);if(!ev)return;editingId=id;selType=ev.type;document.getElementById('modalTitle').textContent='Reagendar demanda';buildReagendarForm(ev);document.getElementById('modal').classList.add('open');}
+
+function viewEvent(id){
+  const ev=events.find(e=>e.id===id);if(!ev)return;
+  const t=TYPES[ev.type];
+  document.getElementById('modalTitle').textContent='Detalhes da demanda';
+  document.getElementById('modalBody').innerHTML=`
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:1.25rem;padding:12px;background:var(--surface2);border-radius:var(--radius-sm)">
+      <div style="width:40px;height:40px;border-radius:9px;background:var(--${ev.type}-bg);border:1.5px solid var(--${ev.type}-border);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+        <i class="ti ${t.icon}" style="color:${t.color};font-size:20px"></i>
+      </div>
+      <div>
+        <div style="font-family:'Nunito',sans-serif;font-size:16px;font-weight:800;color:var(--text)">${ev.title}</div>
+        <span class="list-badge ${ev.type}" style="margin-top:3px;display:inline-block">${t.label}</span>
+      </div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:1.5rem">
+      <div style="display:flex;gap:10px;font-size:13px;font-weight:500"><i class="ti ti-calendar" style="color:var(--accent);font-size:16px;margin-top:1px"></i><span style="color:var(--text2)">${fmtDateBR(ev.date)}</span></div>
+      <div style="display:flex;gap:10px;font-size:13px;font-weight:500"><i class="ti ti-clock" style="color:var(--accent);font-size:16px;margin-top:1px"></i><span style="color:var(--text2)">${ev.start} – ${ev.end}</span></div>
+      ${ev.local?`<div style="display:flex;gap:10px;font-size:13px;font-weight:500"><i class="ti ti-map-pin" style="color:var(--accent);font-size:16px;margin-top:1px"></i><span style="color:var(--text2)">${ev.local}</span></div>`:''}
+      ${ev.obs?`<div style="display:flex;gap:10px;font-size:13px;font-weight:500"><i class="ti ti-notes" style="color:var(--accent);font-size:16px;margin-top:1px"></i><span style="color:var(--text2)">${ev.obs}</span></div>`:''}
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;border-top:1.5px solid var(--border);padding-top:1rem">
+      <button class="btn-action" onclick="closeModal();openEdit('${ev.id}')"><i class="ti ti-pencil"></i> Editar</button>
+      <button class="btn-action" onclick="closeModal();openReagendar('${ev.id}')"><i class="ti ti-calendar-event"></i> Reagendar</button>
+      <button class="btn-action danger" onclick="deleteEvent('${ev.id}');closeModal()"><i class="ti ti-trash"></i> Excluir</button>
+    </div>
+  `;
+  document.getElementById('modal').classList.add('open');
+}
+
+function buildForm(ev,date){
+  const types=['lembrete','reuniao','cliente'];
+  document.getElementById('modalBody').innerHTML=`
+    <div class="type-selector">
+      ${types.map(t=>`<div class="type-opt${selType===t?' sel-'+t:''}" id="topt-${t}" onclick="selectType('${t}')">
+        <i class="ti ${TYPES[t].icon} type-opt-icon" style="color:${TYPES[t].color}"></i>
+        <div class="type-opt-label" style="color:${TYPES[t].color}">${TYPES[t].label}</div>
+      </div>`).join('')}
+    </div>
+    <div class="form-group">
+      <label class="form-label">Título</label>
+      <input id="fTitle" class="form-input" placeholder="Descreva a demanda..." value="${ev?ev.title:''}">
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Data</label>
+        <input type="date" id="fDate" class="form-input" value="${ev?ev.date:date||fmtDate(new Date())}">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Local / Link</label>
+        <input id="fLocal" class="form-input" placeholder="Sala, Teams, Zoom..." value="${ev?ev.local:''}">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Início</label>
+        <input type="time" id="fStart" class="form-input" value="${ev?ev.start:'09:00'}">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Término</label>
+        <input type="time" id="fEnd" class="form-input" value="${ev?ev.end:'10:00'}">
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Observações</label>
+      <textarea id="fObs" class="form-input form-textarea" placeholder="Pauta, participantes, notas...">${ev?ev.obs:''}</textarea>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel" onclick="closeModal()">Cancelar</button>
+      <button class="btn-save" onclick="saveEvent()"><i class="ti ti-check"></i> ${editingId?'Salvar alterações':'Criar demanda'}</button>
+    </div>
+  `;
+}
+
+function buildReagendarForm(ev){
+  document.getElementById('modalBody').innerHTML=`
+    <div style="background:var(--accent-light);border:1.5px solid var(--cliente-border);border-radius:var(--radius-sm);padding:12px 14px;margin-bottom:1.25rem">
+      <div style="font-size:11px;color:var(--accent);font-weight:700;margin-bottom:3px;text-transform:uppercase;letter-spacing:.4px">Reagendando</div>
+      <div style="font-size:14px;font-weight:700;color:var(--text)">${ev.title}</div>
+      <div style="font-size:12px;color:var(--text2);margin-top:3px;font-weight:500">${fmtDateBR(ev.date)} · ${ev.start}–${ev.end}</div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Nova data</label>
+      <input type="date" id="rDate" class="form-input" value="${ev.date}">
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Novo início</label>
+        <input type="time" id="rStart" class="form-input" value="${ev.start}">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Novo término</label>
+        <input type="time" id="rEnd" class="form-input" value="${ev.end}">
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Motivo do reagendamento</label>
+      <textarea id="rMotivo" class="form-input form-textarea" placeholder="Informe o motivo..."></textarea>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel" onclick="closeModal()">Cancelar</button>
+      <button class="btn-save" onclick="saveReagendar('${ev.id}')"><i class="ti ti-calendar-event"></i> Reagendar</button>
+    </div>
+  `;
+}
+
+function selectType(t){selType=t;document.querySelectorAll('.type-opt').forEach(el=>{el.className='type-opt';});document.getElementById('topt-'+t).className='type-opt sel-'+t;}
+
+function saveEvent(){
+  const title=document.getElementById('fTitle').value.trim();
+  const date=document.getElementById('fDate').value;
+  const start=document.getElementById('fStart').value;
+  const end=document.getElementById('fEnd').value;
+  const local=document.getElementById('fLocal').value.trim();
+  const obs=document.getElementById('fObs').value.trim();
+  if(!title||!date||!start||!end){showToast('Preencha os campos obrigatórios');return;}
+  if(editingId){const idx=events.findIndex(e=>e.id===editingId);if(idx>-1)events[idx]={...events[idx],type:selType,title,date,start,end,local,obs};showToast('Demanda atualizada!');}
+  else{events.push({id:'e'+Date.now(),type:selType,title,date,start,end,local,obs});showToast('Demanda criada!');}
+  save();closeModal();render();
+}
+
+function saveReagendar(id){
+  const date=document.getElementById('rDate').value;
+  const start=document.getElementById('rStart').value;
+  const end=document.getElementById('rEnd').value;
+  if(!date||!start||!end){showToast('Preencha todos os campos');return;}
+  const idx=events.findIndex(e=>e.id===id);
+  if(idx>-1)events[idx]={...events[idx],date,start,end};
+  save();closeModal();render();showToast('Reagendado com sucesso!');
+}
+
+function deleteEvent(id){if(!confirm('Excluir esta demanda?'))return;events=events.filter(e=>e.id!==id);save();render();showToast('Demanda excluída.');}
+
+function jumpToDate(ds){currentWeekStart=getWeekStart(new Date(ds+'T00:00:00'));if(currentView==='lista')setView('semana',null);render();}
+
+function closeModal(){document.getElementById('modal').classList.remove('open');}
+document.getElementById('modal').addEventListener('click',function(e){if(e.target===this)closeModal();});
+
+function showToast(msg){document.getElementById('toastMsg').textContent=msg;const t=document.getElementById('toast');t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500);}
+
+render();
+</script>
+</body>
+</html>
